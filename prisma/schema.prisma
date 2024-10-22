@@ -1,0 +1,64 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  price       Decimal
+  category    String
+  orderItems  OrderItem[]
+  images      MenuItemImage[] // ความสัมพันธ์กับ MenuItemImage
+}
+
+model MenuItemImage {
+  id        Int      @id @default(autoincrement())
+  url       String   // URL ของรูปภาพ
+  menuItem  MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId Int     // Foreign key
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    String
+  total     Decimal
+  items     OrderItem[]
+  payment   Payment?
+  table     Table?   @relation(fields: [tableId], references: [id])
+  tableId   Int?     // Optional foreign key to Table
+}
+
+model OrderItem {
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  menuItemId Int
+  order      Order    @relation(fields: [orderId], references: [id])
+  orderId    Int
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  amount    Decimal
+  method    String
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int      @unique
+}
+
+model Table {
+  id        Int      @id @default(autoincrement())
+  tableNumber Int    @unique
+  status    String   // e.g., Available, Occupied
+  orders    Order[]  // One-to-many relationship with Order
+}
