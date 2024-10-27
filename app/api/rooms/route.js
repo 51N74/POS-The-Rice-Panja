@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 export async function GET() {
     try {
-      return Response.json(await prisma.table.findMany(
+      return Response.json(await prisma.room.findMany(
         {
           orderBy: {
             id: 'asc'

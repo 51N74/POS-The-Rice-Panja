@@ -45,19 +45,6 @@ export async function PATCH(request, { params }) {
   
   
   
-//   export async function DELETE(request) {
-//     try {
-//       const { searchParams } = new URL(request.url);
-//       const id = searchParams.get('id');
-//       await prisma.menuItem.delete({
-//         where: { id: parseInt(id) },
-//       });
-//       return NextResponse.json({ message: 'Menu item deleted successfully' });
-//     } catch (error) {
-//       return NextResponse.json({ error: 'Failed to delete menu item' }, { status: 500 });
-//     }
-//   }
-
 export async function DELETE(request, { params }) {
     try {
       const menuID = Number(params.id);

@@ -36,6 +36,8 @@ model Order {
   payment   Payment?
   table     Table?   @relation(fields: [tableId], references: [id])
   tableId   Int?     // Optional foreign key to Table
+  room      Room?    @relation(fields: [roomId], references: [id])
+  roomId    Int?
 }
 
 model OrderItem {
@@ -62,3 +64,20 @@ model Table {
   status    String   // e.g., Available, Occupied
   orders    Order[]  // One-to-many relationship with Order
 }
+
+model Room{
+  id        Int      @id @default(autoincrement())
+  roomNumber Int    @unique
+  status    String   // e.g., Available, Occupied
+  orders    Order[]
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  name        String
+  created_at  DateTime @default(now())
+  role      String   @default("member") // Add a role field
+}
+

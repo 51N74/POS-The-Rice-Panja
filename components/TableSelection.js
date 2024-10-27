@@ -25,49 +25,24 @@ const TableSelection = ({ onTableSelect }) => {
   };
 
   return (
-    <div className="table-selection-container">
-      <h1>Select a Table</h1>
-      <div className="table-grid">
+    <div className="flex flex-col items-center justify-center p-4">
+      <h1 className="text-2xl text-black font-semibold mb-6">Select a Table</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
         {tables.map((table) => (
           <div
             key={table.id}
-            className={`table-item ${table.status === 'Occupied' ? 'occupied' : ''} ${
-              selectedTable === table.id ? 'selected' : ''
-            }`}
+            className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all 
+              ${table.status === 'Occupied' ? 'bg-red-100 border-red-400 text-red-600 cursor-not-allowed' : 'bg-white border-gray-300'}
+              ${selectedTable === table.id ? 'bg-green-100 border-green-400' : ''}`}
             onClick={() => handleTableSelect(table.id)}
             disabled={table.status === 'Occupied'}
           >
             <span>Table {table.tableNumber}</span>
-            {table.status === 'Occupied' && <span>(Occupied)</span>}
+            {/* {table.status === 'Occupied' && <span>(Occupied)</span>} */}
           </div>
         ))}
       </div>
-      {selectedTable && <button onClick={() => alert(`Proceeding with table ${selectedTable}`)}>Proceed</button>}
-      <style jsx>{`
-        .table-selection-container {
-          text-align: center;
-        }
-        .table-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-          padding: 20px;
-        }
-        .table-item {
-         color:red;
-          padding: 20px;
-          border: 2px solid #ccc;
-          cursor: pointer;
-          transition: background 0.3s ease;
-        }
-        .table-item.occupied {
-          background-color: #f8d7da;
-          cursor: not-allowed;
-        }
-        .table-item.selected {
-          background-color: #d4edda;
-        }
-      `}</style>
+      
     </div>
   );
 };
