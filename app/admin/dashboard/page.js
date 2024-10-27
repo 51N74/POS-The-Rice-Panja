@@ -66,7 +66,7 @@
 'use client';
 import { useState } from 'react';
 import { HomeIcon, ChartBarIcon, ArchiveIcon } from '@heroicons/react/outline';
-import AddItems from '../../../components/AddItems';
+import MenuList from '../../../components/MenuList';
 
 const Dashboard = () => {
   const [activeMenu, setActiveMenu] = useState('reports');
@@ -114,7 +114,7 @@ const Dashboard = () => {
                 }`}
               >
                 <ArchiveIcon className="h-6 w-6 mr-2" />
-                Items
+                รายการอาหาร
               </button>
             </li>
           </ul>
@@ -167,9 +167,9 @@ const Dashboard = () => {
         {activeMenu === 'items' && (
           <div>
             <h2 className="text-2xl font-semibold text-green-800">
-            Items
+            รายการอาหาร
             </h2>
-            <AddItems />
+            <MenuList />
 
             
           </div>
