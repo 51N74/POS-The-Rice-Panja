@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 export async function GET(request, { params }) {
   const { id } = params;
   try {
-    const tableOrders = await prisma.room.findUnique({
+    const roomOrders = await prisma.room.findUnique({
       where: { id: parseInt(id) },
       include: {
         orders: {
@@ -32,26 +32,24 @@ export async function GET(request, { params }) {
       },
     });
 
-    if (!tableOrders) {
-      return NextResponse.json({ error: "Table not found" }, { status: 404 });
+    if (!roomOrders) {
+      return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
     // Summarize the total of all orders
     // Summarize the total of all orders
-    const totalAmount = tableOrders.orders.reduce(
+    const totalAmount = roomOrders.orders.reduce(
       (sum, order) => sum + Number(order.total),
       0
     );
 
     console.log("Total amount:", totalAmount);
-
-    
-    
+  
     // Send summarized data to the frontend
     return NextResponse.json({
       roomId: id,
       totalAmount,
-      orders: tableOrders.orders,
+      orders: roomOrders.orders,
     });
   } catch (error) {
     console.error("Error fetching table and orders:", error);

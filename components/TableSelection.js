@@ -26,18 +26,18 @@ const TableSelection = ({ onTableSelect }) => {
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
-      <h1 className="text-2xl text-black font-semibold mb-6">Select a Table</h1>
+      <h1 className="text-2xl text-black font-semibold mb-6">เลือกโต๊ะ</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
         {tables.map((table) => (
           <div
             key={table.id}
             className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all 
-              ${table.status === 'Occupied' ? 'bg-red-100 border-red-400 text-red-600 cursor-not-allowed' : 'bg-white border-gray-300'}
-              ${selectedTable === table.id ? 'bg-green-100 border-green-400' : ''}`}
+              ${table.status === 'Occupied' ? 'bg-red-100 border-red-400 text-red-600 cursor-not-allowed' : 'text-black bg-white border-gray-300'}
+              ${selectedTable === table.id ? 'bg-green-100 border-green-400 text-black' : ''}`}
             onClick={() => handleTableSelect(table.id)}
             disabled={table.status === 'Occupied'}
           >
-            <span>Table {table.tableNumber}</span>
+            <span>โต๊ะที่ {table.tableNumber}</span>
             {/* {table.status === 'Occupied' && <span>(Occupied)</span>} */}
           </div>
         ))}

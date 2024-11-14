@@ -9,22 +9,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model MenuItem {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   name        String
   description String?
   price       Decimal
-  category    String
   orderItems  OrderItem[]
-  images      MenuItemImage[] // ความสัมพันธ์กับ MenuItemImage
+  images      MenuItemImage[]  // One-to-many relationship with MenuItemImage
+  categories  MenuItemCategory[] // Many-to-many relationship through junction table
 }
 
 model MenuItemImage {
   id        Int      @id @default(autoincrement())
-  url       String   // URL ของรูปภาพ
+  imageData Bytes?    // Store the actual image as binary data
   menuItem  MenuItem @relation(fields: [menuItemId], references: [id])
-  menuItemId Int     // Foreign key
+  menuItemId Int
 }
+
+
+model MenuCategory {
+  id          Int              @id @default(autoincrement())
+  name        String
+  categories  MenuItemCategory[] // Many-to-many relationship through junction table
+}
+
+model MenuItemCategory {
+  id            Int       @id @default(autoincrement())
+  menuItemId    Int
+  menuCategoryId Int
+
+  menuItem      MenuItem   @relation(fields: [menuItemId], references: [id])
+  menuCategory  MenuCategory @relation(fields: [menuCategoryId], references: [id])
+
+  @@unique([menuItemId, menuCategoryId]) // Ensure unique pairs
+}
+
 
 model Order {
   id        Int      @id @default(autoincrement())

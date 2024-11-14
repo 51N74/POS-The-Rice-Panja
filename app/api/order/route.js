@@ -22,33 +22,45 @@ export async function POST(request) {
     const body = await request.json();
     
     // Validate the request body
-    if (!body || typeof body.total === 'undefined' || !Array.isArray(body.items) || !body.tableId) {
+    if (!body || typeof body.total === 'undefined' || !Array.isArray(body.items) || (!body.tableId && !body.roomId)) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { total, items, tableId } = body;
+    const { total, items, tableId, roomId } = body;
+
+    // Prepare the order data conditionally
+    const orderData = {
+      status: 'pending',
+      total,
+      items: {
+        create: items.map(item => ({
+          quantity: item.quantity,
+          menuItem: { connect: { id: item.menuItemId } },
+        })),
+      },
+    };
+    
+    if (tableId) {
+      orderData.table = { connect: { id: tableId } };
+    }
+    
+    if (roomId) {
+      orderData.room = { connect: { id: roomId } };
+    }
 
     // Create the order
     const order = await prisma.order.create({
-      data: {
-        status: 'pending',
-        total,
-        items: {
-          create: items.map(item => ({
-            quantity: item.quantity,
-            menuItem: { connect: { id: item.menuItemId } },
-          })),
-        },
-        table: { connect: { id: tableId } }, // Link the order to the table
-      },
+      data: orderData,
       include: { items: { include: { menuItem: true } } },
     });
 
-    // Step 2: Update the table status to "Occupied"
-    await prisma.table.update({
-      where: { id: tableId },
-      data: { status: 'Occupied' },
-    });
+    // Update table status if tableId is provided
+    if (tableId) {
+      await prisma.table.update({
+        where: { id: tableId },
+        data: { status: 'Occupied' },
+      });
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
@@ -56,5 +68,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
   }
 }
+
 
 // PUT and DELETE methods can be added as needed

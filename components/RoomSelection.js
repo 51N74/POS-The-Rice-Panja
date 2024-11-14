@@ -33,11 +33,11 @@ const RoomSelection = ({ onRoomSelect }) => {
             key={room.id}
             className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all 
               ${room.status === 'Occupied' ? 'bg-red-100 border-red-400 text-red-600 cursor-not-allowed' : 'bg-white border-gray-300'}
-              ${selectedRoom === room.id ? 'bg-green-100 border-green-400' : ''}`}
+              ${selectedRoom === room.id ? 'bg-green-100 border-green-400 ' : ''}`}
             onClick={() => handleRoomSelect(room.id)}
             disabled={room.status === 'Occupied'}
           >
-            <span className='text-lg font-semibold mb-2 text-center text-black'>Room {room.roomNumber}</span>
+            <span className='text-lg font-semibold mb-2 text-center text-black'>ห้องที่ {room.roomNumber}</span>
             {/* {room.status === 'Occupied' && <span>(Occupied)</span>} */}
           </div>
         ))}
