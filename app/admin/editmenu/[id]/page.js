@@ -36,7 +36,7 @@ const EditMenu = () => {
           name: menuItem.name,
           description: menuItem.description,
           price: menuItem.price,
-          // menuCategory:menuItem.category
+          menuCategory:menuItem.categories
         }),
       });
 
@@ -109,9 +109,9 @@ const EditMenu = () => {
             Category
           </label>
           <select
-            value={menuItem.category}
+            value={menuItem.categories}
             onChange={(e) =>
-              setMenuItem({ ...menuItem, category: e.target.value })
+              setMenuItem({ ...menuItem, categories: e.target.value })
             }
             className="text-black w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
           >

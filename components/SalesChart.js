@@ -64,7 +64,7 @@ function SalesChart() {
     };
 
     return (
-        <div className="p-6 bg-white rounded-lg shadow-lg max-w-md">
+        <div className="p-6 bg-white rounded-lg shadow-lg w-full">
             <h3 className="text-lg font-semibold mb-4 text-gray-700">ยอดขายทั้งหมด</h3>
             
             <div className="mb-4">
@@ -81,7 +81,7 @@ function SalesChart() {
             </div>
 
             {orders.length > 0 ? (
-                <div style={{ width: '100%', maxWidth: '400px', height: '300px', margin: '0 auto' }}>
+                <div style={{ width: '100%', maxWidth: '100%', height: '600px', margin: '0 auto' }}>
                     <Bar
                         data={chartData}
                         options={{
