@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# The Rice PanJa POS System
 
-## Getting Started
+The Rice PanJa POS system is a web-based platform tailored for **The Rice PanJa Restaurant**. This system is designed to streamline restaurant operations while accommodating the unique requirements of a restaurant with guest rooms.
 
-First, run the development server:
+## 🌟 Key Features
+### Admin Features:
+1. **Menu Management**: Add, edit, or delete menu items effortlessly.
+2. **Billing System**: Generate and manage bills efficiently.
+3. **Order Locations**: Specify whether orders are for in-restaurant dining or guest room service.
+4. **Order History**: View past order details and billing records for analysis and reporting.
+5. **Automatic Bill Printing**:  
+   - Once an order is placed, a bill is automatically printed in the kitchen to ensure quick food preparation.  
+   - A summary bill is also generated for record-keeping, and the final bill will only be printed when the customer requests payment.  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Customer Features:
+1. **Menu Selection**: Customers can browse and select food items directly from the web platform.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🎯 Future Plans
+- **Room Integration**: Seamlessly connect the POS system with the guest room booking system to enhance efficiency and user experience.
+- **Advanced Reporting**: Add more detailed analytics and reporting tools for both orders and billing.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+---
 
-## Learn More
+## 🔧 Technologies Used
+- **Framework**: [Next.js](https://nextjs.org/)  
+- **Database**: [PostgreSQL](https://www.postgresql.org/)  
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+---
