@@ -14,7 +14,7 @@ export default function SignIn() {
 
     // Hardcoded credentials
     const hardcodedUsername = 'admin'
-    const hardcodedPassword = 'adminpanja01'
+    const hardcodedPassword = 'adminpanja'
 
     // Check if username and password are correct
     if (username === hardcodedUsername && password === hardcodedPassword) {
