@@ -16,6 +16,12 @@ The Rice PanJa POS system is a web-based platform tailored for **The Rice PanJa 
 1. **Menu Selection**: Customers can browse and select food items directly from the web platform.
 
 ---
+🛠️ How to Access the Admin Panel
+To access the admin dashboard, go to:
+📌 /admin/dashboard
+
+Admins can log in to manage menu items, track orders, and handle billing efficiently.
+---
 
 ## 🎯 Future Plans
 - **Room Integration**: Seamlessly connect the POS system with the guest room booking system to enhance efficiency and user experience.
