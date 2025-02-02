@@ -12,22 +12,29 @@ export default function AddMenu() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
+  const menuCategories = [
+    { id: 1, name: "อาหารจานเดียว" },
+    { id: 2, name: "กับข้าว" },
+    { id: 3, name: "ของทานเล่น" },
+    { id: 4, name: "เครื่องดื่ม" },
+    { id: 5, name: "Drinks" },
+  ];
 
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await fetch("/api/menu/category");
-        if (!response.ok) throw new Error("Failed to fetch categories");
-        const data = await response.json();
-        setCategories(data);
-      } catch (error) {
-        console.error("Error fetching categories:", error.message);
-        setErrorMessage("Error fetching categories. Please try again.");
-      }
-    };
+  // useEffect(() => {
+  //   const fetchCategory = async () => {
+  //     try {
+  //       const response = await fetch("/api/menu/category");
+  //       if (!response.ok) throw new Error("Failed to fetch categories");
+  //       const data = await response.json();
+  //       setCategories(data);
+  //     } catch (error) {
+  //       console.error("Error fetching categories:", error.message);
+  //       setErrorMessage("Error fetching categories. Please try again.");
+  //     }
+  //   };
 
-    fetchCategory();
-  }, []);
+  //   fetchCategory();
+  // }, []);
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -87,7 +94,7 @@ export default function AddMenu() {
           </div>
 
           {/* Category Selector */}
-          <div>
+          {/* <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
             <select
               id="category"
@@ -99,6 +106,23 @@ export default function AddMenu() {
             >
               <option value="">Select a category</option>
               {categories.map((category) => (
+                <option key={category.id} value={category.name}>{category.name}</option>
+              ))}
+            </select>
+          </div> */}
+
+<div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+            <select
+              id="category"
+              name="category"
+              required
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              className="text-black mt-1 block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+            >
+              <option value="">Select a category</option>
+              {menuCategories.map((category) => (
                 <option key={category.id} value={category.name}>{category.name}</option>
               ))}
             </select>

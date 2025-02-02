@@ -157,7 +157,7 @@ if (error) return <div className="text-center py-8 text-red-600">Error: {error}<
 
             <li>
 
-            <LogoutButton />
+            {/* <LogoutButton />
               <button
                 onClick={() => setActiveMenu("logout")}
                 className={`flex items-center px-4 py-2 w-full transition ${
@@ -179,7 +179,7 @@ if (error) return <div className="text-center py-8 text-red-600">Error: {error}<
                   />
                 </svg>
                 ออกจากระบบ
-              </button>
+              </button> */}
             </li>
           </ul>
         </nav>
