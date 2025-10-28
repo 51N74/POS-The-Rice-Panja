@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma"; // 👈 นำเข้า (Import) Prisma Singleton ที่สร้างขึ้น
+import prisma from "@/lib/prisma";
 
 // GET
 export async function GET(request, { params }) {
