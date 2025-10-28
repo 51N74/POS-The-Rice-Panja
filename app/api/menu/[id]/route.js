@@ -1,58 +1,24 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma"; // 👈 นำเข้า (Import) Prisma Singleton ที่สร้างขึ้น
 
-// export async function PATCH(request, { params }) {
-//     try {
-//       const { id } = params;
-//       const body = await request.json();
-  
-//       // Start a transaction to update the menu item and manage images
-//       const updatedMenuItem = await prisma.$transaction(async (prisma) => {
-//         // Delete existing images associated with the menu item
-//         await prisma.menuItemImage.deleteMany({
-//           where: { menuItemId: Number(id) },
-//         });
-  
-//         // Update the menu item details
-//         const updatedItem = await prisma.menuItem.update({
-//           where: { id: Number(id) },
-//           data: {
-//             name: body.name,
-//             description: body.description,
-//             price: parseFloat(body.price),
-//             category: body.category,
-//             images: {
-//               create: body.images.map((imageUrl) => ({
-//                 url: imageUrl,
-//               })),
-//             },
-//           },
-//           include: {
-//             images: true, // Include the images in the response
-//           },
-//         });
-  
-//         return updatedItem;
-//       });
-  
-//       return NextResponse.json(updatedMenuItem);
-//     } catch (error) {
-//       console.error(error);
-//       return NextResponse.json({ error: 'Failed to update menu item' }, { status: 500 });
-//     }
-//   }
-  
-//GET
+// GET
 export async function GET(request, { params }) {
   try {
     const menuID = Number(params.id);
+
+    if (isNaN(menuID)) {
+      return NextResponse.json(
+        { error: "Invalid menu item ID." },
+        { status: 400 },
+      );
+    }
+
     const menuItem = await prisma.menuItem.findUnique({
       where: {
         id: menuID,
       },
       include: {
-        // images: true,
+        // images: true, // หากต้องการดึงข้อมูลรูปภาพ
         categories: {
           include: {
             menuCategory: true,
@@ -60,50 +26,64 @@ export async function GET(request, { params }) {
         },
       },
     });
+
+    if (!menuItem) {
+      return NextResponse.json(
+        { error: "Menu item not found" },
+        { status: 404 },
+      );
+    }
+
     return NextResponse.json(menuItem);
   } catch (error) {
-    
+    // 👈 เพิ่ม Error Handling ที่สมบูรณ์
+    console.error("Error fetching menu item:", error);
+    // เมื่อมี error เกิดขึ้น จะ return status 500 แทนการปล่อยให้ build ล้มเหลว
+    return NextResponse.json(
+      { error: "Failed to fetch menu item" },
+      { status: 500 },
+    );
   }
 }
 
+// PATCH
 export async function PATCH(request, { params }) {
   const { id } = params;
-  const { name, description, price, menuCategory } = await request.json();
 
+  // ใช้ try...catch ครอบการอ่าน body ด้วย เพื่อป้องกัน error
   try {
+    const { name, description, price, menuCategory } = await request.json();
+
     const updatedMenuItem = await prisma.menuItem.update({
       where: { id: parseInt(id) },
       data: {
         name,
         description,
         price,
-        menuCategory
+        menuCategory,
       },
-      // include: {        
-      //   categories: {
-      //     include: {
-      //       menuCategory: true,
-      //     },
-      //   },
-      // },
+      // ... include options
     });
     return NextResponse.json(updatedMenuItem);
   } catch (error) {
-    console.error('Error updating menu item:', error);
-    return NextResponse.json({ error: 'Failed to update menu item' }, { status: 500 });
+    console.error("Error updating menu item:", error);
+    return NextResponse.json(
+      { error: "Failed to update menu item" },
+      { status: 500 },
+    );
   }
 }
-  
-  
+
+// DELETE
 export async function DELETE(request, { params }) {
   try {
     const menuID = Number(params.id);
-    
+
     // Check if the menuID is valid
     if (isNaN(menuID)) {
-      return new Response(
-        JSON.stringify({ message: "Invalid menu item ID." }),
-        { status: 400 } // Bad Request
+      return NextResponse.json(
+        { message: "Invalid menu item ID." },
+        { status: 400 },
       );
     }
 
@@ -113,17 +93,14 @@ export async function DELETE(request, { params }) {
       },
     });
 
-    return new Response(
-      JSON.stringify({ message: "Delete Successful" }),
-      { status: 200 } // OK
-    );
+    return NextResponse.json({ message: "Delete Successful" }, { status: 200 });
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    // กรณีที่ delete ล้มเหลว (เช่น ไม่พบ ID นั้น)
+    console.error("Error deleting menu item:", error);
 
-    return new Response(
-      JSON.stringify({ message: "Failed to delete item.", error: error.message }),
-      { status: 500 } // Internal Server Error
+    return NextResponse.json(
+      { message: "Failed to delete item.", error: error.message },
+      { status: 500 },
     );
   }
 }
-
