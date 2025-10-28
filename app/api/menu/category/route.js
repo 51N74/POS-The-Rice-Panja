@@ -1,17 +1,21 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// app/api/category/route.js
 
-const prisma = new PrismaClient();
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma"; // ✅ Import Prisma Singleton ที่สร้างไว้
 
 //Get All Category
 export async function GET() {
   try {
-    const menuCategory = await prisma.menuCategory.findMany({    
-    });
+    // การเรียกใช้ Prisma ยังคงเหมือนเดิม
+    const menuCategory = await prisma.menuCategory.findMany({});
 
     return NextResponse.json(menuCategory);
   } catch (error) {
-    console.error('Error fetching menu items by category:', error);
-    return NextResponse.json({ error: 'Failed to fetch menu items' }, { status: 500 });
+    console.error("Error fetching menu categories:", error);
+    // ✅ การจัดการ Error ที่ดีแล้ว
+    return NextResponse.json(
+      { error: "Failed to fetch menu categories" },
+      { status: 500 },
+    );
   }
 }
