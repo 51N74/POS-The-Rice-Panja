@@ -3,6 +3,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma"; // ✅ Import Prisma Singleton ที่สร้างไว้
 
+export const runtime = "nodejs";
+
 //Get All Category
 export async function GET() {
   try {

@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import fetch from "node-fetch"; // Needed to use fetch on the server
 
+export const runtime = "nodejs";
+
 export async function GET() {
   try {
     const menuItems = await prisma.menuItem.findMany({
