@@ -1,43 +1,36 @@
-// pages/api/tables.js
+// src/app/api/rooms/[id]/route.js
 
 import { NextResponse } from "next/server";
-// import { PrismaClient } from "@prisma/client"; ❌ ลบบรรทัดนี้
-// const prisma = new PrismaClient(); ❌ ลบบรรทัดนี้
+import prisma from "@/lib/prisma";
 
-import prisma from "@/lib/prisma"; // ✅ ใช้ Prisma Singleton ที่ถูกจัดการแล้ว
+// ✅ แก้ไข 1: เปลี่ยน export const config เป็น export const runtime และบังคับใช้ dynamic
+// เพื่อป้องกัน Build Error และ Connection Timeout
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// 💡 การแก้ไขที่สำคัญ: บังคับใช้ Node.js Runtime เพื่อความเสถียรในการเชื่อมต่อ DB
-// เนื่องจากนี่คือ Pages Router API Route (pages/api)
-// การตั้งค่า runtime อาจมีผลน้อยกว่า App Router แต่ยังคงแนะนำให้ทำ
-export const config = {
-  runtime: "nodejs",
-};
-
+// 💡 หมายเหตุ: ใน App Router, params จะถูกส่งมาในอาร์กิวเมนต์ที่สอง
 export async function GET(request, { params }) {
-  // ⚠️ หมายเหตุ: Pages Router API Routes จะได้รับ 'query' (รวมถึง id) จาก req.query
-  // แต่โค้ดนี้ดูเหมือนจะถูกเขียนตามรูปแบบ App Router (ใช้ { params })
-  // หากโค้ดนี้อยู่ใน pages/api/tables/[id].js และคุณใช้ Next.js 13/14
-  // และมีการเรียกใช้ API นี้จาก Page Component ที่กำลังทำ SSG, ปัญหาก็จะเกิด
-
-  // สมมติว่านี่คือ Pages Router API Route และ params ถูกดึงมาจาก query หรือมีการตั้งค่าพิเศษ
-  // แต่เนื่องจากโค้ดเดิมใช้ { params } เราจะรักษารูปแบบไว้และแก้ไขเฉพาะปัญหา Build
+  // Destructure id จาก params
   const { id } = params;
 
-  // **หากคุณใช้ Pages Router จริงๆ (pages/api):** // คุณควรจะดึง id จาก: const { id } = request.query;
-
   try {
-    // ตรวจสอบว่า id ไม่ใช่ undefined ก่อนที่จะเรียก parseInt
-    if (!id) {
+    // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
+    if (!id || isNaN(Number(id))) {
       return NextResponse.json(
-        { error: "Missing ID parameter" },
+        { error: "Invalid or missing Room ID parameter" },
         { status: 400 },
       );
     }
 
+    // แปลง id เป็น Number สำหรับ Prisma where condition
+    const roomId = Number(id);
+
     const roomOrders = await prisma.room.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: roomId },
       include: {
+        // ดึงเฉพาะ Orders ที่ยังไม่ถูกจ่าย (ถ้ามีสถานะ 'pending' หรือ 'open')
         orders: {
+          where: { status: { not: "Paid" } }, // 💡 ดึงเฉพาะออเดอร์ที่ยังไม่ปิดบิล
           select: {
             id: true,
             status: true,
@@ -48,7 +41,7 @@ export async function GET(request, { params }) {
                 quantity: true,
                 menuItem: {
                   select: {
-                    name: true, // Selecting the menu item name
+                    name: true,
                     price: true,
                   },
                 },
@@ -63,24 +56,26 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    // Summarize the total of all orders
-    const totalAmount = roomOrders.orders.reduce(
+    // กรองหาเฉพาะ Orders ที่ยังไม่ 'Paid' หากไม่ได้ใช้เงื่อนไข where ด้านบน
+    const activeOrders = roomOrders.orders;
+
+    // Summarize the total of all active orders
+    const totalAmount = activeOrders.reduce(
       (sum, order) => sum + Number(order.total),
       0,
     );
 
-    console.log("Total amount:", totalAmount);
-
     // Send summarized data to the frontend
     return NextResponse.json({
-      roomId: id,
-      totalAmount,
-      orders: roomOrders.orders,
+      roomId: roomId,
+      roomName: roomOrders.name, // เพิ่มชื่อ Room
+      totalAmount: totalAmount.toFixed(2), // จัดรูปแบบเป็นทศนิยม 2 ตำแหน่ง
+      orders: activeOrders,
     });
   } catch (error) {
-    console.error("Error fetching table and orders:", error);
+    console.error("Error fetching room and orders:", error);
     return NextResponse.json(
-      { error: "Failed to fetch table and orders" },
+      { error: "Failed to fetch room and orders" },
       { status: 500 },
     );
   }
