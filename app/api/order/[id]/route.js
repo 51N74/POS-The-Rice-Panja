@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 
-import prisma from "@/lib/prisma"; // ✅ ใช้ Prisma Singleton ที่ถูกจัดการแล้ว
+import prisma from "@/app/lib/prisma";
 
 // 💡 การแก้ไขที่สำคัญ: บังคับใช้ Node.js Runtime เพื่อความเสถียรในการเชื่อมต่อ DB
 export const runtime = "nodejs";

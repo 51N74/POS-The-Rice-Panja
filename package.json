@@ -7,7 +7,7 @@
     "build": "POSTGRES_PRISMA_URL=DUMMY_URL DATABASE_URL=postgres://user:password@localhost/dummy_db next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts"
   },
   "dependencies": {
     "@heroicons/react": "^1.0.6",

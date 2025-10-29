@@ -1,7 +1,7 @@
 // app/api/category/route.js
 
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma"; // ✅ Import Prisma Singleton ที่สร้างไว้
+import prisma from "@/app/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

@@ -1,7 +1,7 @@
 // src/app/api/room/route.js
 
 import { NextResponse } from "next/server"; // ✅ Import NextResponse
-import prisma from "@/lib/prisma";
+import prisma from "@/app/lib/prisma";
 
 // 💡 การแก้ไขที่สำคัญ: บังคับใช้ Node.js Runtime เพื่อความเสถียรในการเชื่อมต่อ DB
 export const runtime = "nodejs";

@@ -1,82 +1,91 @@
-// src/app/api/rooms/[id]/route.js
+"use client";
 
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import React, { useEffect, useState } from "react";
+// สมมติว่ามีการ import Component ของปุ่มโต๊ะมาที่นี่
 
-// ✅ แก้ไข 1: เปลี่ยน export const config เป็น export const runtime และบังคับใช้ dynamic
-// เพื่อป้องกัน Build Error และ Connection Timeout
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+const TableSelection = ({ onTableSelect }) => {
+  const [tables, setTables] = useState(null); // 💡 เปลี่ยนจาก [] เป็น null หรือใช้ []
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-// 💡 หมายเหตุ: ใน App Router, params จะถูกส่งมาในอาร์กิวเมนต์ที่สอง
-export async function GET(request, { params }) {
-  // Destructure id จาก params
-  const { id } = params;
+  useEffect(() => {
+    const fetchTables = async () => {
+      try {
+        // 💡 ตรวจสอบพาธ API ให้ถูกต้อง: /api/tables (หรือ /api/table)
+        const response = await fetch("/api/tables");
 
-  try {
-    // ตรวจสอบว่า id มีค่าและเป็นตัวเลข
-    if (!id || isNaN(Number(id))) {
-      return NextResponse.json(
-        { error: "Invalid or missing Room ID parameter" },
-        { status: 400 },
-      );
-    }
+        if (!response.ok) {
+          // หาก API ตอบกลับด้วยสถานะ 500 หรือ 404
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch tables data.");
+        }
 
-    // แปลง id เป็น Number สำหรับ Prisma where condition
-    const roomId = Number(id);
+        const data = await response.json();
 
-    const roomOrders = await prisma.room.findUnique({
-      where: { id: roomId },
-      include: {
-        // ดึงเฉพาะ Orders ที่ยังไม่ถูกจ่าย (ถ้ามีสถานะ 'pending' หรือ 'open')
-        orders: {
-          where: { status: { not: "Paid" } }, // 💡 ดึงเฉพาะออเดอร์ที่ยังไม่ปิดบิล
-          select: {
-            id: true,
-            status: true,
-            total: true,
-            createdAt: true,
-            items: {
-              select: {
-                quantity: true,
-                menuItem: {
-                  select: {
-                    name: true,
-                    price: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+        // 💡 การแก้ไขที่สำคัญ: ตรวจสอบว่าข้อมูลที่ได้มาเป็น Array หรือไม่
+        if (!Array.isArray(data)) {
+          console.error("API did not return an array:", data);
+          // ถ้า API ส่ง Object กลับมา ให้ตั้งค่า Error เพื่อหยุดการ Render
+          setError("Invalid data format received from server.");
+          setTables([]); // ตั้งค่าเป็น Array ว่าง เพื่อป้องกัน Error ในการ Render
+          return;
+        }
 
-    if (!roomOrders) {
-      return NextResponse.json({ error: "Room not found" }, { status: 404 });
-    }
+        setTables(data);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+        // เนื่องจากเรามี 500 Error บ่อยครั้ง การจัดการ Error ใน UI จึงสำคัญ
+        setError(
+          err.message || "Could not load tables. Please check API status.",
+        );
+        setTables([]); // ต้องตั้งค่าเป็น Array ว่างเมื่อเกิด Error
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // กรองหาเฉพาะ Orders ที่ยังไม่ 'Paid' หากไม่ได้ใช้เงื่อนไข where ด้านบน
-    const activeOrders = roomOrders.orders;
+    fetchTables();
+  }, []);
 
-    // Summarize the total of all active orders
-    const totalAmount = activeOrders.reduce(
-      (sum, order) => sum + Number(order.total),
-      0,
-    );
+  // --- การจัดการสถานะ Loading และ Error ---
 
-    // Send summarized data to the frontend
-    return NextResponse.json({
-      roomId: roomId,
-      roomName: roomOrders.name, // เพิ่มชื่อ Room
-      totalAmount: totalAmount.toFixed(2), // จัดรูปแบบเป็นทศนิยม 2 ตำแหน่ง
-      orders: activeOrders,
-    });
-  } catch (error) {
-    console.error("Error fetching room and orders:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch room and orders" },
-      { status: 500 },
+  if (loading) {
+    return (
+      <div className="text-center py-8 text-gray-500">Loading tables...</div>
     );
   }
-}
+
+  if (error) {
+    return <div className="text-center py-8 text-red-600">Error: {error}</div>;
+  }
+
+  // 💡 การแก้ไขที่ 2: เพิ่มการตรวจสอบ Array ว่าง
+  if (!tables || tables.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">No tables available.</div>
+    );
+  }
+
+  // --- Rendering Tables ---
+
+  return (
+    <div>
+      <h1 className="text-2xl text-black font-semibold mb-6">เลือกโต๊ะ</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-4xl">
+        {/* ✅ ตอนนี้มั่นใจแล้วว่า tables เป็น Array และมีข้อมูล */}
+        {tables.map((table) => (
+          <button
+            key={table.id}
+            onClick={() => onTableSelect(table.id)}
+            className={`p-4 rounded-lg shadow-md transition-all
+                        ${table.status === "Occupied" ? "bg-red-500 hover:bg-red-600 text-white" : "bg-green-500 hover:bg-green-600 text-white"}`}
+          >
+            Table {table.id} ({table.status})
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TableSelection;

@@ -1,7 +1,7 @@
 // src/app/api/checkout/[tableId]/route.js (หรือ .ts)
 
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/app/lib/prisma";
 // ⚠️ สำคัญ: ต้องเพิ่ม runtime และ dynamic เพื่อป้องกัน Build Error และ Connection Timeout
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

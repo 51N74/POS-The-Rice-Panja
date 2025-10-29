@@ -1,34 +1,33 @@
-// pages/api/tables.js
+// src/app/api/tables/[id]/route.js
 
 import { NextResponse } from "next/server";
-// import { PrismaClient } from "@prisma/client"; ❌ ลบบรรทัดนี้
-// const prisma = new PrismaClient(); ❌ ลบบรรทัดนี้
+import prisma from "@/app/lib/prisma";
 
-import prisma from "@/lib/prisma"; // ✅ ใช้ Prisma Singleton ที่ถูกจัดการแล้ว
-
-// 💡 การแก้ไขที่สำคัญ: บังคับใช้ Node.js Runtime เพื่อความเสถียรในการเชื่อมต่อ DB
-// สำหรับ Pages Router API Route (pages/api) จะใช้ 'config'
+// 💡 การแก้ไขที่สำคัญ: ต้องกำหนด runtime และ dynamic เพื่อป้องกัน Timeout (500 Error)
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request, { params }) {
-  // ⚠️ หมายเหตุ: การดึง id ใน Pages Router API Route มักใช้ request.query
-  // แต่เราจะใช้ { params } ตามรูปแบบโค้ดเดิมของคุณ และแก้ไขเฉพาะปัญหา Build
+  // Destructure id จาก params (App Router)
   const { id } = params;
 
   try {
-    // ตรวจสอบว่า id ไม่ใช่ undefined ก่อนที่จะเรียก parseInt
-    if (!id) {
+    // 1. ✅ ตรวจสอบและแปลง id
+    if (!id || isNaN(Number(id))) {
       return NextResponse.json(
-        { error: "Missing ID parameter" },
+        { error: "Invalid or missing Table ID parameter" },
         { status: 400 },
       );
     }
 
+    const tableId = Number(id);
+
     const tableOrders = await prisma.table.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: tableId },
       include: {
         orders: {
+          // 2. ✅ เพิ่มการกรอง: ดึงเฉพาะ Orders ที่ยังไม่ถูกจ่าย (status ไม่ใช่ 'Paid')
+          where: { status: { not: "Paid" } },
           select: {
             id: true,
             status: true,
@@ -54,19 +53,21 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Table not found" }, { status: 404 });
     }
 
-    // Summarize the total of all orders
-    const totalAmount = tableOrders.orders.reduce(
+    // กรองหาเฉพาะ Orders ที่ยังไม่ 'Paid'
+    const activeOrders = tableOrders.orders;
+
+    // 3. ✅ Summarize the total of all *active* orders
+    const totalAmount = activeOrders.reduce(
       (sum, order) => sum + Number(order.total),
       0,
     );
 
-    console.log("Total amount:", totalAmount);
-
     // Send summarized data to the frontend
     return NextResponse.json({
       tableId: id,
-      totalAmount,
-      orders: tableOrders.orders,
+      tableStatus: tableOrders.status, // เพิ่มสถานะโต๊ะปัจจุบัน
+      totalAmount: totalAmount.toFixed(2), // จัดรูปแบบเป็นทศนิยม 2 ตำแหน่ง
+      orders: activeOrders,
     });
   } catch (error) {
     console.error("Error fetching table and orders:", error);
