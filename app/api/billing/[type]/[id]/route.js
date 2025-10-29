@@ -3,7 +3,6 @@
 import { NextResponse } from "next/server";
 // ⚠️ แก้ไข: ใช้ Relative Path เพื่อแก้ปัญหา Module Not Found ถ้ายังไม่ได้ตั้งค่า Alias
 import prisma from "@/app/lib/prisma";
-import { Prisma } from "@prisma/client";
 
 // สำคัญ: ต้องเพิ่ม runtime และ dynamic เพื่อป้องกัน Build Error และ Connection Timeout
 export const runtime = "nodejs";
@@ -71,16 +70,17 @@ export async function GET(request, { params }) {
 
     // 4. คำนวณยอดรวมทั้งหมด (Total Bill)
     // ใช้ reduce เพื่อรวมค่า total ของทุก Order
-    const totalAmount = orders.reduce((sum, order) => {
-      // ⚠️ เนื่องจาก order.total เป็น Prisma.Decimal ต้องใช้ .plus()
-      return sum.plus(order.total);
-    }, new Prisma.Decimal(0));
+    const totalAmountDecimal = orders.reduce((sum, order) => {
+      // 💡 แปลงค่า Order.total ให้เป็น String แล้วเป็น Float เพื่อรวม
+      // นี่คือวิธีที่ปลอดภัยกว่าการใช้ Decimal Object โดยตรงในโค้ด
+      return sum + parseFloat(order.total.toString());
+    }, 0);
 
     // 5. ส่งข้อมูลบิลที่ครบถ้วนกลับไป
     return NextResponse.json({
       location: `${locationName} ${locationId}`,
-      // แปลง Decimal เป็น string เพื่อส่งผ่าน JSON และจัดรูปแบบทศนิยม
-      totalAmount: totalAmount.toFixed(2),
+      // จัดรูปแบบให้มีทศนิยม 2 ตำแหน่ง
+      totalAmount: totalAmountDecimal.toFixed(2),
       orders: orders,
     });
   } catch (error) {
