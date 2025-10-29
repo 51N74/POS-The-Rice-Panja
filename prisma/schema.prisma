@@ -2,64 +2,67 @@
 
 generator client {
   previewFeatures = ["referentialIntegrity"]
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
 }
+
+// datasource db {
+//   provider          = "postgresql"
+//   url               = env("POSTGRES_PRISMA_URL") // uses connection pooling
+//   directUrl         = env("POSTGRES_URL_NON_POOLING")
+//   shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // uses a direct connection
+// }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl         = env("POSTGRES_URL_NON_POOLING")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // uses a direct connection
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-
 model MenuItem {
-  id          Int              @id @default(autoincrement())
+  id          Int                @id @default(autoincrement())
   name        String
   description String?
   price       Decimal
   orderItems  OrderItem[]
-  images      MenuItemImage[]  // One-to-many relationship with MenuItemImage
+  images      MenuItemImage[] // One-to-many relationship with MenuItemImage
   categories  MenuItemCategory[] // Many-to-many relationship through junction table
 }
 
 model MenuItemImage {
-  id        Int      @id @default(autoincrement())
-  imageData Bytes?    // Store the actual image as binary data
-  menuItem  MenuItem @relation(fields: [menuItemId], references: [id])
+  id         Int      @id @default(autoincrement())
+  imageData  Bytes? // Store the actual image as binary data
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   menuItemId Int
 }
 
-
 model MenuCategory {
-  id          Int              @id @default(autoincrement())
-  name        String
-  categories  MenuItemCategory[] // Many-to-many relationship through junction table
+  id         Int                @id @default(autoincrement())
+  name       String
+  categories MenuItemCategory[] // Many-to-many relationship through junction table
 }
 
 model MenuItemCategory {
-  id            Int       @id @default(autoincrement())
-  menuItemId    Int
+  id             Int @id @default(autoincrement())
+  menuItemId     Int
   menuCategoryId Int
 
-  menuItem      MenuItem   @relation(fields: [menuItemId], references: [id])
-  menuCategory  MenuCategory @relation(fields: [menuCategoryId], references: [id])
+  menuItem     MenuItem     @relation(fields: [menuItemId], references: [id])
+  menuCategory MenuCategory @relation(fields: [menuCategoryId], references: [id])
 
   @@unique([menuItemId, menuCategoryId]) // Ensure unique pairs
 }
 
-
 model Order {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   status    String
   total     Decimal
   items     OrderItem[]
   payment   Payment?
-  table     Table?   @relation(fields: [tableId], references: [id])
-  tableId   Int?     // Optional foreign key to Table
-  room      Room?    @relation(fields: [roomId], references: [id])
+  table     Table?      @relation(fields: [tableId], references: [id])
+  tableId   Int? // Optional foreign key to Table
+  room      Room?       @relation(fields: [roomId], references: [id])
   roomId    Int?
 }
 
@@ -82,24 +85,24 @@ model Payment {
 }
 
 model Table {
-  id        Int      @id @default(autoincrement())
-  tableNumber Int    @unique
-  status    String   // e.g., Available, Occupied
-  orders    Order[]  // One-to-many relationship with Order
+  id          Int     @id @default(autoincrement())
+  tableNumber Int     @unique
+  status      String // e.g., Available, Occupied
+  orders      Order[] // One-to-many relationship with Order
 }
 
-model Room{
-  id        Int      @id @default(autoincrement())
-  roomNumber Int    @unique
-  status    String   // e.g., Available, Occupied
-  orders    Order[]
+model Room {
+  id         Int     @id @default(autoincrement())
+  roomNumber Int     @unique
+  status     String // e.g., Available, Occupied
+  orders     Order[]
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
-  password    String
-  name        String
-  created_at  DateTime @default(now())
-  role      String   @default("member") // Add a role field
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  name       String
+  created_at DateTime @default(now())
+  role       String   @default("member") // Add a role field
 }
