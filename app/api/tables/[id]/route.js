@@ -8,9 +8,8 @@ import prisma from "@/lib/prisma"; // ✅ ใช้ Prisma Singleton ที่�
 
 // 💡 การแก้ไขที่สำคัญ: บังคับใช้ Node.js Runtime เพื่อความเสถียรในการเชื่อมต่อ DB
 // สำหรับ Pages Router API Route (pages/api) จะใช้ 'config'
-export const config = {
-  runtime: "nodejs",
-};
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request, { params }) {
   // ⚠️ หมายเหตุ: การดึง id ใน Pages Router API Route มักใช้ request.query

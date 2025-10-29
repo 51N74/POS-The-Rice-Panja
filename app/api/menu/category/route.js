@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma"; // ✅ Import Prisma Singleton ที่สร้างไว้
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 //Get All Category
 export async function GET() {
