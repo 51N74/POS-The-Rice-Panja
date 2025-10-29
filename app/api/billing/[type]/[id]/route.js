@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 // ⚠️ แก้ไข: ใช้ Relative Path เพื่อแก้ปัญหา Module Not Found ถ้ายังไม่ได้ตั้งค่า Alias
-import prisma from "../../../lib/prisma";
+import prisma from "@/app/lib/prisma";
 
 // สำคัญ: ต้องเพิ่ม runtime และ dynamic เพื่อป้องกัน Build Error และ Connection Timeout
 export const runtime = "nodejs";
