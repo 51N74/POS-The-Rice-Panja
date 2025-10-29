@@ -8,7 +8,7 @@ const OrderForm = ({ onOrderSubmit, tableId, roomId }) => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("อาหารจานเดียว");
+  const [selectedCategory, setSelectedCategory] = useState("Main Dishes");
   const router = useRouter();
 
   // Fetch menu items based on the selected category
@@ -40,8 +40,8 @@ const OrderForm = ({ onOrderSubmit, tableId, roomId }) => {
         order.map((orderItem) =>
           orderItem.id === item.id
             ? { ...orderItem, quantity: orderItem.quantity + 1 }
-            : orderItem
-        )
+            : orderItem,
+        ),
       );
     } else {
       setOrder([...order, { ...item, quantity: 1 }]);
@@ -58,8 +58,8 @@ const OrderForm = ({ onOrderSubmit, tableId, roomId }) => {
         order.map((orderItem) =>
           orderItem.id === item.id
             ? { ...orderItem, quantity: orderItem.quantity - 1 }
-            : orderItem
-        )
+            : orderItem,
+        ),
       );
     }
     setTotal(total - parseFloat(item.price));
@@ -113,12 +113,12 @@ const OrderForm = ({ onOrderSubmit, tableId, roomId }) => {
       <div className="menu-items mb-8">
         <div className="flex flex-col sm:flex-row justify-between">
           <div className="flex space-x-2 mb-4 sm:mb-0">
-            {["อาหารจานเดียว", "กับข้าว", "ของทานเล่น", "เครื่องดื่ม"].map(
+            {["Main Dishes", "Appetizers", "Desserts", "Beverages"].map(
               (category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg transition duration-300 
+                  className={`px-4 py-2 rounded-lg transition duration-300
                     ${
                       selectedCategory === category
                         ? "bg-orange-500 text-white"
@@ -127,17 +127,20 @@ const OrderForm = ({ onOrderSubmit, tableId, roomId }) => {
                 >
                   {category}
                 </button>
-              )
+              ),
             )}
           </div>
 
           <button
             onClick={() =>
-              router.push(`/billing/${tableId ? `table/${tableId}` : `room/${roomId}`}`)
+              router.push(
+                `/billing/${tableId ? `table/${tableId}` : `room/${roomId}`}`,
+              )
             }
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition duration-300"
           >
-            Check All Bills {tableId ? `for Table ${tableId}` : `for Room ${roomId}`}
+            Check All Bills{" "}
+            {tableId ? `for Table ${tableId}` : `for Room ${roomId}`}
           </button>
         </div>
 
