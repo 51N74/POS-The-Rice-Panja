@@ -1,29 +1,94 @@
-// PaymentPage.js
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PrinterIcon } from "@heroicons/react/outline";
+
+// 💡 แก้ไข: printReceipt ต้องรับ billDetails และ tableId
+const printReceipt = async (billDetails, tableId) => {
+  if (!billDetails || !billDetails.orders || billDetails.orders.length === 0) {
+    alert("No order details to print.");
+    return;
+  }
+
+  // รวมรายการอาหารทั้งหมดจากทุกออเดอร์
+  const allOrderItems = billDetails.orders.flatMap((order) =>
+    order.items.map((item) => ({
+      name: item.menuItem.name,
+      quantity: item.quantity,
+      price: (item.quantity * item.menuItem.price).toFixed(2),
+    })),
+  );
+
+  try {
+    const response = await fetch("/api/print", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify({
+        ipAddress: "192.168.1.50",
+        port: 9100,
+        orderDetails: allOrderItems, // ส่งเป็น Array of Objects
+        date: new Date().toLocaleDateString(),
+        totalAmount: Number(billDetails.totalAmount).toFixed(2),
+        tableRoomDetails: `โต๊ะ ${tableId}`,
+      }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      alert("Receipt printed successfully!");
+      console.log(result.message);
+    } else {
+      const result = await response.json();
+      alert(`Failed to print receipt: ${result.message}`);
+    }
+  } catch (error) {
+    console.error("Error printing receipt:", error);
+    alert("Failed to print receipt. Please try again.");
+  }
+};
+
+// 💡 เพิ่ม: ฟังก์ชันสำหรับการยืนยันชำระเงิน/เคลียร์บิล
+const handleCheckout = async (tableId, router) => {
+  if (
+    !confirm(`Confirm payment for Table ${tableId} and clear the table status?`)
+  ) {
+    return;
+  }
+
+  try {
+    // เรียกใช้ Route Handler ที่สร้างขึ้นใหม่
+    const response = await fetch(`/api/checkout/table/${tableId}`, {
+      method: "POST",
+    });
+
+    if (!response.ok) throw new Error("Failed to finalize payment.");
+
+    alert(`Payment successful for Table ${tableId}. Table status cleared.`);
+    router.push("/");
+  } catch (error) {
+    console.error("Checkout Error:", error);
+    alert(`Checkout failed: ${error.message}`);
+  }
+};
 
 const PaymentPage = ({ params }) => {
-  // 💡 แก้ไข 1: ตรวจสอบการ Destructure ชื่อตัวแปร (ควรเป็น tableId)
-  // ถ้าชื่อโฟลเดอร์คือ [tableId] ใน params จะได้ { tableId: 'X' }
   const { tableId } = params;
-
   const [billDetails, setBillDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
+    // ... (fetchBillDetails logic remains the same)
     const fetchBillDetails = async () => {
+      // ... (โค้ด fetchBillDetails เดิม)
       try {
-        // 💡 แก้ไข 2: ใช้ tableId ที่ Destructure มา
-        if (!tableId) {
-          throw new Error("No table ID provided.");
-        }
+        if (!tableId) throw new Error("No table ID provided.");
 
-        // 💡 แก้ไข 3: เปลี่ยน API Path จาก /api/payment เป็น /api/tables (หรือ /api/order/summary)
-        const response = await fetch(`/api/tables/${tableId}`);
+        const response = await fetch(`/api/billing/table/${tableId}`);
         if (!response.ok) {
           console.error("Error fetching bill details:", response);
           throw new Error("Failed to fetch bill details");
@@ -39,14 +104,8 @@ const PaymentPage = ({ params }) => {
       }
     };
 
-    // 💡 ตรวจสอบ tableId ก่อนเรียก fetch
-    if (tableId) {
-      fetchBillDetails();
-    } else {
-      setLoading(false);
-      setError("Table ID is missing from the URL.");
-    }
-  }, [tableId]); // Dependency array ใช้ tableId
+    fetchBillDetails();
+  }, [tableId]);
 
   if (loading)
     return <div className="text-center py-8">Loading bill details...</div>;
@@ -55,63 +114,97 @@ const PaymentPage = ({ params }) => {
 
   return (
     <div className="payment-page max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-      {/* 💡 แก้ไข 4: ใช้ tableId เพื่อแสดงผล */}
-      <h1 className="text-2xl font-bold mb-4">
-        Bill Details for Table {tableId}
+      <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
+        Table **{tableId}** Bill Summary
       </h1>
+
       {billDetails ? (
         <div>
-          {/* ⚠️ โครงสร้างข้อมูลที่คาดหวังจาก /api/tables/[id] คือ { totalAmount: X, orders: [...] } */}
-          {/* ถ้าใช้ API /api/tables/[id] ต้องแสดงผลเป็น billDetails.totalAmount */}
-          <p className="text-lg font-semibold">
-            Total:{" "}
-            {Number(billDetails.totalAmount || billDetails.total || 0).toFixed(
-              2,
-            )}{" "}
-            THB
+          <p className="text-lg font-bold mb-4 text-center text-green-600">
+            Total for all orders:{" "}
+            <span className="text-2xl text-red-700">
+              {Number(billDetails.totalAmount).toFixed(2)} THB
+            </span>
           </p>
 
-          {/* ⚠️ ส่วนนี้อาจไม่ตรงกับโครงสร้างข้อมูลจริง (ต้องมี orders.items) */}
-          <div className="mt-4">
-            {billDetails.orders && billDetails.orders.length > 0 ? (
-              <div>
-                <h2 className="text-xl font-semibold mt-4">Orders Summary:</h2>
-                <ul className="mt-2 space-y-2">
-                  {/* รวมรายการทั้งหมดจากทุกออเดอร์ใน billDetails.orders */}
-                  {billDetails.orders.flatMap((order) =>
-                    order.items.map((item, index) => (
-                      <li
-                        key={`${order.id}-${index}`}
-                        className="border-b py-2 flex justify-between"
-                      >
-                        <span>
-                          {item.menuItem?.name || "Item"} x {item.quantity}
+          {billDetails.orders && billDetails.orders.length > 0 ? (
+            <div className="mt-4">
+              <h2 className="text-xl font-semibold mb-2 text-purple-600">
+                รายการสั่งซื้อ
+              </h2>
+              <ul className="space-y-4">
+                {billDetails.orders.map((order) => (
+                  <li
+                    key={order.id}
+                    className="border p-4 rounded-md shadow-md bg-gray-100 hover:bg-gray-200 transition duration-300"
+                  >
+                    <div className="flex justify-between">
+                      <span className="font-semibold text-orange-600">
+                        Order ID: #{order.id}
+                      </span>
+                      <span>
+                        Total:{" "}
+                        <span className="text-green-600 font-bold">
+                          {Number(order.total).toFixed(2)} บาท
                         </span>
-                        <span>
-                          {Number(
-                            item.quantity * (item.menuItem?.price || 0),
-                          ).toFixed(2)}{" "}
-                          THB
-                        </span>
-                      </li>
-                    )),
-                  )}
-                </ul>
+                      </span>
+                    </div>
+
+                    <ul className="mt-1 list-disc ml-5">
+                      {order.items.map((item, index) => (
+                        <li key={index} className="text-gray-800">
+                          <div className="flex justify-between">
+                            <span>
+                              **{item.menuItem.name}** x {item.quantity}
+                            </span>
+                            <span>
+                              {Number(
+                                item.quantity * item.menuItem.price,
+                              ).toFixed(2)}{" "}
+                              บาท
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex justify-between mt-8">
+                <button
+                  onClick={() => router.push("/")}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition"
+                >
+                  Cancel / Back
+                </button>
+
+                {/* 💡 แก้ไข: เรียกใช้ printReceipt ด้วย billDetails และ tableId */}
+                <button
+                  onClick={() => printReceipt(billDetails, tableId)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center font-semibold transition"
+                >
+                  Print Receipt <PrinterIcon className="h-5 w-5 ml-2" />
+                </button>
+
+                {/* 💡 ปุ่มยืนยันชำระเงิน */}
+                <button
+                  onClick={() => handleCheckout(tableId, router)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+                >
+                  Confirm Payment / Checkout
+                </button>
               </div>
-            ) : (
-              <p>No active orders found for this table.</p>
-            )}
-          </div>
-          {/* Button to proceed with payment */}
-          <button
-            onClick={() => router.push(`/payment/checkout/${tableId}`)}
-            className="mt-6 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition duration-300 font-semibold"
-          >
-            Proceed to Payment
-          </button>
+            </div>
+          ) : (
+            <p className="text-center mt-4 text-gray-500">
+              No active orders found for this table.
+            </p>
+          )}
         </div>
       ) : (
-        <p>No bill details available for this table.</p>
+        <p className="text-center mt-4 text-red-600">
+          No bill details available for this table.
+        </p>
       )}
     </div>
   );

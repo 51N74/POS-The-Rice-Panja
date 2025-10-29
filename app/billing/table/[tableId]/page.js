@@ -1,4 +1,3 @@
-// PaymentPage.js (โค้ดที่แก้ไข)
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -61,7 +60,7 @@ const handleCheckout = async (tableId, router) => {
 
   try {
     // เรียกใช้ Route Handler ที่สร้างขึ้นใหม่
-    const response = await fetch(`/api/checkout/${tableId}`, {
+    const response = await fetch(`/api/checkout/table/${tableId}`, {
       method: "POST",
     });
 
@@ -89,7 +88,7 @@ const PaymentPage = ({ params }) => {
       try {
         if (!tableId) throw new Error("No table ID provided.");
 
-        const response = await fetch(`/api/tables/${tableId}`);
+        const response = await fetch(`/api/billing/table/${tableId}`);
         if (!response.ok) {
           console.error("Error fetching bill details:", response);
           throw new Error("Failed to fetch bill details");
