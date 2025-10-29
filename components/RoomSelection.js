@@ -93,7 +93,7 @@ const RoomSelection = ({ onRoomSelect }) => {
                         `}
           >
             <span className="text-lg font-semibold mb-2 text-center">
-              ห้องที่ {room.roomNumber}
+              ห้องที่ {room.id}
             </span>
             <span className="text-sm font-light">
               {room.status === "Occupied" ? "ไม่ว่าง" : "ว่าง"}

@@ -107,7 +107,7 @@ const TableSelection = ({ onTableSelect }) => {
                         `}
           >
             <span className="text-lg font-semibold mb-2">
-              โต๊ะที่ {table.tableNumber}
+              โต๊ะที่ {table.id}
             </span>
             <span className="text-sm font-light">
               {table.status === "Occupied" ? "ไม่ว่าง" : "ว่าง"}
